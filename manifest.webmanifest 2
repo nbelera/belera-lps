@@ -1,0 +1,10 @@
+{
+  "name": "Belera LPS",
+  "short_name": "Belera LPS",
+  "description": "Belera Life Points System",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "lang": "ru"
+}

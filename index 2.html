@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ru">
+<head><meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Belera LPS">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Belera LPS</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial,sans-serif}
+.app{max-width:760px;margin:auto;padding:18px 14px 90px}
+h1{margin:0;font-size:30px}.sub{color:#777;margin-top:2px}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0}
+button{font:inherit;cursor:pointer}.tab{border:1px solid #111;border-radius:12px;padding:10px 6px;background:#fff}.tab.active{background:#111;color:#fff}
+.card{background:#f7f7f8;border-radius:18px;padding:16px;margin:12px 0}.muted{color:#777;font-size:13px}
+.balance{font-size:42px;font-weight:750;margin-top:3px}.search{width:100%;font-size:17px;padding:12px;border:1px solid #aaa;border-radius:12px;margin:12px 0}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 10px;border-radius:10px;border-bottom:1px solid #ddd}.item:nth-child(even){background:#e2e2e7}
+.add{flex:0 0 auto;padding:8px 13px;border-radius:10px;background:#fff;color:#111;border:1px solid #000}.item:nth-child(even) .add{background:#e9e9ee;border-color:#000}
+.points{color:#777;font-size:12px;margin-top:3px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #ddd}.row:last-child{border-bottom:0}
+.tag{font-weight:650;white-space:nowrap}.pos{color:#087f3e}.neg{color:#b42318}
+.hidden{display:none!important}svg{width:100%;height:280px;display:block}.small{font-size:12px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);display:none;align-items:flex-end;z-index:20}.modal-bg.show{display:flex}
+.modal{width:100%;max-width:600px;margin:auto;background:#fff;border-radius:22px 22px 0 0;padding:20px;box-shadow:0 -8px 30px rgba(0,0,0,.2)}
+.modal input{width:100%;font-size:22px;padding:13px;border:1px solid #999;border-radius:12px;margin:8px 0 14px}
+.modal-actions{display:flex;gap:10px}.modal-actions button{flex:1;padding:12px;border-radius:12px;border:1px solid #111}.cancel{background:#fff}.save{background:#111;color:#fff}
+.dir{display:flex;gap:8px;margin:4px 0 14px}.dir button{flex:1;padding:10px;border-radius:11px;background:#eee;border:1px solid #111}.dir .sel{background:#111;color:#fff}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid #ddd}tr:nth-child(even) td{background:#e2e2e7}
+hr{border:0;border-top:1px solid #ddd;margin:12px 0}
+.history-inline{margin-top:5px;font-size:12px;color:#666;line-height:1.45}.history-inline b{color:#111}
+
+.chart-wrap{overflow-x:auto}
+.chart-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.stat-box{background:#fff;border:1px solid #ddd;border-radius:12px;padding:10px}
+.stat-box .num{font-size:20px;font-weight:700;margin-top:3px}
+.chart-table{width:100%;margin-top:12px;font-size:13px}
+.chart-table th,.chart-table td{padding:8px 6px;border-bottom:1px solid #ddd;text-align:left}
+.chart-table tr:nth-child(even) td{background:#e2e2e7}
+
+.settings-reward{border:1px solid #ccc;border-radius:14px;padding:12px;margin:10px 0}
+.settings-reward input,.settings-reward select{width:100%;padding:10px;border:1px solid #aaa;border-radius:10px;font:inherit;margin:5px 0 9px}
+.settings-actions{display:flex;gap:8px}.settings-actions button{padding:8px 12px;border:1px solid #111;border-radius:10px;background:#fff}
+
+.settings-item{border:1px solid #ccc;border-radius:14px;padding:12px;margin:10px 0}
+.settings-item input{width:100%;padding:10px;border:1px solid #aaa;border-radius:10px;font:inherit;margin:5px 0 9px}
+.item-coefs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item-coefs input{margin-top:5px}.settings-actions{display:flex;gap:8px;margin-top:5px}
+.settings-actions button{padding:8px 12px;border:1px solid #111;border-radius:10px;background:#fff}
+
+.settings-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:14px}
+.settings-tab{padding:11px 8px;border:1px solid #111;border-radius:11px;background:#fff;font:inherit}
+.settings-tab.active{background:#111;color:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>Belera LPS</h1><div class="sub">Belera Life Points System</div></header>
+<nav class="tabs">
+<button class="tab active" data-screen="today">Сегодня</button><button class="tab" data-screen="history">История</button><button class="tab" data-screen="stats">Статистика</button><button class="tab" data-screen="settings">Настройки</button>
+</nav>
+
+<section id="today">
+<div class="card"><div id="todayDate" class="muted"></div><div id="todayBalance" class="balance">0</div><div class="muted">Результат дня</div></div>
+<div class="card"><b>Добавить действие</b><input id="search" class="search" placeholder="Поиск показателя…"><div id="items"></div></div>
+</section>
+
+<section id="history" class="hidden">
+<div class="card"><h2>История</h2><div id="historyDays"></div></div>
+<div class="card"><h3>Действия за выбранный день</h3><div id="dayActions" class="muted">Выбери день выше.</div></div>
+</section>
+
+<section id="stats" class="hidden">
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 style="margin:0">Статистика</h2>
+<select id="period" style="font-size:15px;padding:8px;border-radius:10px"><option>Дни</option><option>Недели</option><option>Месяцы</option><option>Год</option></select></div>
+<div class="chart-wrap"><svg id="chart" viewBox="0 0 700 340" aria-label="График"></svg></div>
+<div class="muted">● результат &nbsp; ┄ среднее &nbsp; ─ ноль</div>
+<div class="chart-summary">
+ <div class="stat-box"><div class="muted">Средний показатель</div><div class="num" id="average">0</div></div>
+ <div class="stat-box"><div class="muted">Последний показатель</div><div class="num" id="latest">0</div></div>
+</div>
+<div id="chartTable"></div>
+</div>
+<div class="card"><h3>Награды</h3>
+<div class="row"><div><b>Награда недели</b><div class="muted">Сходить на массаж</div></div><span id="reward1">0</span></div>
+<div class="row"><div><b>Награда недели</b><div class="muted">Снять эко-дом на выходные</div></div><span id="reward2">0</span></div>
+<div class="row"><div><b>Подарок по итогам 2026 года</b><div class="muted">Поездка зимой в отпуск в Германию</div></div><span id="reward3">0</span></div>
+</div>
+</section>
+
+<section id="lps" class="hidden"><div class="card"><h2>LPS</h2><div class="muted">Показатели и коэффициенты</div><div id="rules"></div></div></section>
+
+</section>
+
+<section id="settings" class="hidden">
+<div class="card">
+  <h2>Настройки</h2>
+  <div class="settings-tabs">
+    <button type="button" class="settings-tab active" data-settings-tab="items">Показатели LPS</button>
+    <button type="button" class="settings-tab" data-settings-tab="rewards">Награды</button>
+    <button type="button" class="settings-tab" data-settings-tab="data">Данные</button>
+  </div>
+</div>
+
+<div id="settingsItemsPanel">
+  <div class="card">
+    <div class="muted">Названия и коэффициенты показателей LPS.</div>
+    <div id="settingsItems"></div>
+    <button id="newItem" class="add" type="button" style="margin-top:12px">+ Добавить показатель</button>
+  </div>
+</div>
+
+<div id="settingsRewardsPanel" class="hidden">
+  <div class="card">
+    <div class="muted">Награды хранятся отдельно от показателей LPS.</div>
+    <div id="settingsRewards"></div>
+    <button id="newReward" class="add" type="button" style="margin-top:12px">+ Добавить награду</button>
+  </div>
+</div>
+<div id="settingsDataPanel" class="hidden">
+  <div class="card">
+    <h3>Резервная копия</h3>
+    <div class="muted">Сохраняет историю, показатели LPS и награды в одном файле.</div>
+    <button id="exportLps" class="add" type="button" style="margin-top:12px">Экспортировать LPS</button>
+    <input id="importLps" type="file" accept=".json,application/json" style="display:none">
+    <button id="chooseImport" class="add" type="button" style="margin-top:8px">Импортировать LPS</button>
+  </div>
+  <div class="card">
+    <h3>Сброс</h3>
+    <div class="muted">Удалит историю, показатели и награды с этого устройства. Действие необратимо.</div>
+    <button id="resetLps" type="button" style="margin-top:12px;padding:10px 14px;border:1px solid #111;border-radius:10px;background:#fff">Сбросить данные</button>
+  </div>
+</div>
+</section>
+
+</div>
+
+<div id="modalBg" class="modal-bg">
+<div class="modal" role="dialog" aria-modal="true">
+<h3 id="modalTitle">Добавить действие</h3><div id="modalRule" class="muted"></div>
+<label for="qty">Количество</label><input id="qty" inputmode="decimal" value="1">
+<div id="direction" class="dir"><button id="plusBtn" class="sel" type="button">+</button><button id="minusBtn" type="button">−</button></div>
+<div class="modal-actions"><button id="cancelBtn" class="cancel" type="button">Отмена</button><button id="saveBtn" class="save" type="button">Добавить</button></div>
+</div></div>
+
+<script>
+"use strict";
+const ITEMS=[
+["Проснуться не позже 6:00 / 07:00",300,-300],["Заправить постель",100,-150],["Почистить зубы",150,-150],
+["Ирригатор, ополаскиватель",50,-100],["Побриться",100,null],["Умыть лицо/сделать маску",100,-200],["Принять душ",200,-200],
+["Постричься",100,null],["Завтрак, обед, ужин (здоровый!)",300,-300],["Помыть посуду",100,-100],["Прогулка с Персиком",200,-200],
+["Погладить вещи",70,null],["Сигарета",1000,-1500],["Алкоголь",100,-300],["Почистить лоток/аквариум",150,-150],
+["Тренировка",400,-400],["Съесть фрукт, овощ, ягоды",100,-500],["Большое дело / большой проект / решить большую проблему",400,null],
+["Читать книгу (1 час)",100,-300],["Заниматься языком/наукой",350,-350],["Заниматься гитарой",350,-350],
+["Выполненный проект по работе/учёбе",400,-400],["Планирование, список дел",150,-150],["Разминка",100,-100],
+["Приготовить блюдо",850,null],["Сожжённые калории",1,null],["Турник",50,-200],["Велосипед (км)",40,-200],
+["Бег (км)",200,-350],["Прогулка (км)",100,-300],["Поздравить с д/р, праздником",50,-200],
+["Позвонить родственнику/другу",100,null],["Зайти в гости к родственнику/другу/подарить подарок",200,null],
+["Медитация/йога",200,-100],["Заработанные деньги",1.5,null],["Потраченные деньги",-3,-13],["Отложенные деньги",3,null],
+["Запись в Mare Moscoviense, дневнике, новая статья, рассказ, страница романа/повести или стихотворение (знаки с пробелами)",300,-300],
+["Отдых не дома (прогулка, кино, море, озеро, театр, массаж, концерт)",300,-300],["Отбой не позже 00:30",300,-300],
+["Прочитанная книга, выученное стихотворение",850,null],["Прибрать соцсети/почту/раб.стол/фото",150,-200],
+["Продумывать дополнительные источники доходов (30-60 мин)",200,-300],["Прибрать квартиру/кабинет",300,-200],["Доброе дело",500,null],
+["Компьютерные игры (час)",200,-150]
+].map(x=>({name:x[0],plus:x[1],minus:x[2]}));
+
+const keyData="belera_lps_data_v1", keyActions="belera_lps_actions_v1";
+let data=load(keyData,{}), actions=load(keyActions,{}), selectedDate=todayKey(), pending=null, historyDate=todayKey();
+
+function load(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch(e){return f}}
+function save(){localStorage.setItem(keyData,JSON.stringify(data));localStorage.setItem(keyActions,JSON.stringify(actions))}
+function todayKey(){return new Date().toISOString().slice(0,10)}
+function fmt(n){return Number(n||0).toLocaleString("ru-RU",{maximumFractionDigits:2})}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+
+function renderItems(){
+ const q=document.getElementById("search").value.trim().toLowerCase();
+ const dayActions=actions[selectedDate]||[];
+ const totals={};
+ dayActions.forEach(a=>{
+   if(!totals[a.name])totals[a.name]={qty:0,points:0,unit:a.unit};
+   totals[a.name].qty+=Number(a.qty)||0;
+   totals[a.name].points+=Number(a.points)||0;
+ });
+ document.getElementById("items").innerHTML=lpsItems.map((x,i)=>({x,i}))
+ .filter(o=>o.x.name.toLowerCase().includes(q)).map(o=>{
+   const t=totals[o.x.name];
+   const hist=t?`<div class="history-inline">Сегодня: <b>${fmt(t.qty)}</b> ед. · <b>${t.points>=0?"+":""}${fmt(t.points)} очков</b></div>`:"";
+   return `<div class="item"><div><div>${esc(o.x.name)}</div><div class="points">+ ${o.x.plus??"—"} / − ${o.x.minus??"—"}</div>${hist}</div><button class="add" data-i="${o.i}" type="button">Добавить</button></div>`;
+ }).join("");
+}
+function renderToday(){
+ const d=new Date(selectedDate+"T12:00:00");
+ document.getElementById("todayDate").textContent=d.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ const b=data[selectedDate]||0;document.getElementById("todayBalance").textContent=(b>=0?"+":"")+fmt(b);
+}
+function renderHistory(){
+ const days=Object.keys(data).sort().reverse();
+ document.getElementById("historyDays").innerHTML=days.length?days.map(k=>{
+  const b=data[k]||0;return `<div class="row" data-day="${k}" style="cursor:pointer"><span>${new Date(k+"T12:00:00").toLocaleDateString("ru-RU")}</span><b class="${b>=0?"pos":"neg"}">${b>=0?"+":""}${fmt(b)}</b></div>`;
+ }).join(""):"<div class='muted'>История пока пуста.</div>";
+ const a=(actions[historyDate]||[]).slice().reverse();
+ document.getElementById("dayActions").innerHTML=a.length?a.map(x=>`<div class="row"><div><b>${esc(x.name)}</b><div class="muted">${esc(x.qty)} × ${esc(x.unit)}</div></div><span class="${x.points>=0?"pos":"neg"}">${x.points>=0?"+":""}${fmt(x.points)}</span></div>`).join(""):"<div class='muted'>За этот день действий пока нет.</div>";
+}
+function groups(period){
+ const out={};Object.keys(data).sort().forEach(k=>{
+  let key=k;
+  if(period==="Недели"){let d=new Date(k+"T12:00:00"),n=(d.getDay()+6)%7;d.setDate(d.getDate()-n);key=d.toISOString().slice(0,10)}
+  if(period==="Месяцы")key=k.slice(0,7);if(period==="Год")key=k.slice(0,4);
+  out[key]=(out[key]||0)+(data[k]||0);
+ });return out;
+}
+function draw(vals){
+ const svg=document.getElementById("chart"), table=document.getElementById("chartTable");
+ if(!vals.length){svg.innerHTML="<text x='350' y='160' text-anchor='middle' fill='#777'>Пока нет данных</text>";table.innerHTML="";document.getElementById("average").textContent="0";document.getElementById("latest").textContent="0";return}
+ const W=700,H=340,pL=55,pR=18,pT=25,pB=45,ys=vals.map(v=>v.v);
+ const mn=Math.min(0,...ys),mx=Math.max(0,...ys),r=mx-mn||1;
+ const X=i=>pL+i*(W-pL-pR)/Math.max(1,vals.length-1);
+ const Y=v=>pT+(mx-v)*(H-pT-pB)/r;
+ const avg=ys.reduce((a,b)=>a+b,0)/ys.length;
+ const y0=Y(0),ya=Y(avg);
+ const points=vals.map((v,i)=>`${X(i)},${Y(v.v)}`).join(" ");
+ const labels=vals.map((v,i)=>{
+   if(vals.length>14 && i%Math.ceil(vals.length/10)!==0 && i!==vals.length-1)return "";
+   return `<text x="${X(i)}" y="${H-13}" text-anchor="middle" font-size="11" fill="#555">${esc(v.k)}</text>`;
+ }).join("");
+ svg.innerHTML=`
+ <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="#aaa"/>
+ <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="#aaa"/>
+ <line x1="${pL}" y1="${y0}" x2="${W-pR}" y2="${y0}" stroke="#999"/>
+ <line x1="${pL}" y1="${ya}" x2="${W-pR}" y2="${ya}" stroke="#555" stroke-dasharray="8 7"/>
+ <text x="5" y="${Math.max(15,Math.min(H-50,ya-5))}" font-size="12" fill="#555">ср. ${fmt(avg)}</text>
+ <polyline points="${points}" fill="none" stroke="#111" stroke-width="3"/>
+ ${vals.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v.v)}" r="4" fill="#111"><title>${v.k}: ${fmt(v.v)}</title></circle>`).join("")}
+ ${labels}`;
+ document.getElementById("average").textContent=(avg>=0?"+":"")+fmt(avg);
+ const latest=ys[ys.length-1]||0;
+ document.getElementById("latest").textContent=(latest>=0?"+":"")+fmt(latest);
+ table.innerHTML=`<table class="chart-table"><tr><th>Период</th><th>Баллы</th></tr>${vals.slice().reverse().map(v=>`<tr><td>${esc(v.k)}</td><td class="${v.v>=0?"pos":"neg"}">${v.v>=0?"+":""}${fmt(v.v)}</td></tr>`).join("")}</table>`;
+}
+function renderStats(){
+ const p=document.getElementById("period").value,g=groups(p);
+ const keys=Object.keys(g).sort();
+ const vals=keys.map(k=>{
+   let label=k;
+   if(p==="Дни")label=new Date(k+"T12:00:00").toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"});
+   else if(p==="Недели")label=new Date(k+"T12:00:00").toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"});
+   else if(p==="Месяцы")label=k.slice(5)+"."+k.slice(0,4);
+   return {k:label,v:g[k]};
+ });
+ draw(vals);
+ const ykeys=Object.keys(data).filter(k=>k.startsWith("2026"));
+ const yv=ykeys.map(k=>data[k]||0),y=yv.length?yv.reduce((a,b)=>a+b,0)/yv.length:0;
+ document.getElementById("reward3").textContent=(y>=0?"+":"")+fmt(y);
+}
+function renderRules(){document.getElementById("rules").innerHTML="<table><tr><th>Показатель</th><th>+</th><th>−</th></tr>"+lpsItems.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.plus??"—"}</td><td>${x.minus??"—"}</td></tr>`).join("")+"</table>"}
+
+const rewardsKey="belera_lps_rewards_v2";
+const itemsKey="belera_lps_items_v1";
+let lpsItems=JSON.parse(localStorage.getItem(itemsKey)||"null")||ITEMS.map(x=>({...x}));
+function saveLpsItems(){localStorage.setItem(itemsKey,JSON.stringify(lpsItems))}
+function renderSettingsItems(){
+ const box=document.getElementById("settingsItems"); if(!box)return;
+ box.innerHTML=lpsItems.map((x,i)=>`
+ <div class="settings-item">
+  <label class="muted">Название</label>
+  <input data-i="${i}" data-f="name" value="${esc(x.name)}">
+  <div class="item-coefs">
+   <div><label class="muted">Плюс (+)</label><input data-i="${i}" data-f="plus" inputmode="decimal" value="${x.plus??""}" placeholder="—"></div>
+   <div><label class="muted">Минус (−)</label><input data-i="${i}" data-f="minus" inputmode="decimal" value="${x.minus??""}" placeholder="—"></div>
+  </div>
+  <div class="settings-actions">
+   <button type="button" data-save-item="${i}">Сохранить</button>
+   <button type="button" data-del-item="${i}">Удалить</button>
+  </div>
+ </div>`).join("");
+}
+
+let rewards=JSON.parse(localStorage.getItem(rewardsKey)||'null')||[
+ {period:"День",target:0,name:"Награда за день"},
+ {period:"Неделя",target:0,name:"Сходить на массаж"},
+ {period:"Неделя",target:500,name:"Снять эко-дом на выходные"},
+ {period:"Год",target:100,name:"Поездка зимой в отпуск в Германию"}
+];
+function saveRewards(){localStorage.setItem(rewardsKey,JSON.stringify(rewards))}
+function rewardCurrent(period){
+ const now=new Date(), all=Object.keys(data).sort(), year=String(now.getFullYear());
+ if(period==="День") return Number(data[todayKey()]||0);
+ if(period==="Год"){
+   const a=all.filter(k=>k.startsWith(year)).map(k=>Number(data[k]||0));
+   return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+ }
+ if(period==="Месяц"){
+   const ym=now.toISOString().slice(0,7),a=all.filter(k=>k.startsWith(ym)).map(k=>Number(data[k]||0));
+   return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+ }
+ const d=new Date(now); d.setHours(12,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7));
+ const monday=d.toISOString().slice(0,10),a=all.filter(k=>k>=monday).map(k=>Number(data[k]||0));
+ return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+}
+function renderSettings(){
+ const box=document.getElementById("settingsRewards"); if(!box)return;
+ box.innerHTML=rewards.map((r,i)=>`
+ <div class="settings-reward">
+   <b>Награда ${i+1}</b>
+   <label class="muted">Название</label>
+   <input data-r="${i}" data-f="name" value="${esc(r.name)}">
+   <label class="muted">Период</label>
+   <select data-r="${i}" data-f="period">
+    <option ${r.period==="День"?"selected":""}>День</option>
+    <option ${r.period==="Неделя"?"selected":""}>Неделя</option>
+    <option ${r.period==="Месяц"?"selected":""}>Месяц</option>
+    <option ${r.period==="Год"?"selected":""}>Год</option>
+   </select>
+   <label class="muted">Целевой средний показатель</label>
+   <input data-r="${i}" data-f="target" inputmode="decimal" value="${r.target}">
+   <div class="muted">Сейчас: ${fmt(rewardCurrent(r.period))} · ${rewardCurrent(r.period)>=Number(r.target)?"🏆 цель достигнута":"⏳ цель не достигнута"}</div>
+   <div class="settings-actions">
+    <button type="button" data-save-r="${i}">Сохранить</button>
+    <button type="button" data-del-r="${i}">Удалить</button>
+   </div>
+ </div>`).join("");
+}
+function renderAll(){renderToday();renderItems();renderHistory();renderStats();renderRules();renderSettings();renderSettingsItems()}
+
+function openModal(i){
+ pending=i;const x=lpsItems[i];document.getElementById("modalTitle").textContent="Добавить: "+x.name;document.getElementById("modalRule").textContent="+"+(x.plus??"—")+" / −"+(x.minus??"—");document.getElementById("qty").value="1";
+ const dir=document.getElementById("direction");dir.style.display=(x.plus!==null&&x.minus!==null)?"flex":"none";document.getElementById("plusBtn").classList.add("sel");document.getElementById("minusBtn").classList.remove("sel");document.getElementById("modalBg").classList.add("show");setTimeout(()=>document.getElementById("qty").focus(),50);
+}
+document.addEventListener("click",e=>{const b=e.target.closest(".add");if(b)openModal(Number(b.dataset.i));const d=e.target.closest("[data-day]");if(d){historyDate=d.dataset.day;renderHistory()}});
+document.getElementById("search").addEventListener("input",renderItems);
+document.getElementById("period").addEventListener("change",renderStats);
+document.getElementById("plusBtn").addEventListener("click",()=>{plusBtn.classList.add("sel");minusBtn.classList.remove("sel")});
+document.getElementById("minusBtn").addEventListener("click",()=>{minusBtn.classList.add("sel");plusBtn.classList.remove("sel")});
+document.getElementById("cancelBtn").addEventListener("click",()=>modalBg.classList.remove("show"));
+document.getElementById("modalBg").addEventListener("click",e=>{if(e.target===modalBg)modalBg.classList.remove("show")});
+document.getElementById("saveBtn").addEventListener("click",()=>{
+ if(pending===null)return;const x=lpsItems[pending],q=Number(String(document.getElementById("qty").value).replace(",","."));if(!Number.isFinite(q)||q<=0)return;
+ let sign=x.plus===null?-1:x.minus===null?1:(minusBtn.classList.contains("sel")?-1:1),unit=sign>0?x.plus:x.minus,pts=Number(unit)*q;
+ data[selectedDate]=(data[selectedDate]||0)+pts;if(!actions[selectedDate])actions[selectedDate]=[];actions[selectedDate].push({name:x.name,qty:q,unit:unit,points:pts,time:new Date().toISOString()});save();historyDate=selectedDate;modalBg.classList.remove("show");pending=null;
+document.getElementById("newItem").addEventListener("click",()=>{
+ lpsItems.push({name:"Новый показатель",plus:100,minus:-100});
+ saveLpsItems();renderSettingsItems();renderRules();renderItems();
+});
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-save-item]");
+ if(b){
+  const i=Number(b.dataset.saveItem),box=b.closest(".settings-item");
+  const num=v=>{const t=String(v).trim().replace(",",".");return t===""?null:Number(t)};
+  lpsItems[i].name=box.querySelector('[data-f="name"]').value.trim()||"Новый показатель";
+  lpsItems[i].plus=num(box.querySelector('[data-f="plus"]').value);
+  lpsItems[i].minus=num(box.querySelector('[data-f="minus"]').value);
+  saveLpsItems();renderSettingsItems();renderRules();renderItems();
+ }
+ const d=e.target.closest("[data-del-item]");
+ if(d){lpsItems.splice(Number(d.dataset.delItem),1);saveLpsItems();renderSettingsItems();renderRules();renderItems();}
+});
+
+document.querySelectorAll(".settings-tab").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll(".settings-tab").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");
+ const itemsOn=b.dataset.settingsTab==="items";
+ document.getElementById("settingsItemsPanel").classList.toggle("hidden",!itemsOn);
+ document.getElementById("settingsRewardsPanel").classList.toggle("hidden",itemsOn);
+}));
+renderAll();
+});
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");["today","history","stats","settings"].forEach(id=>document.getElementById(id).classList.toggle("hidden",id!==b.dataset.screen));}));
+renderAll();
+</script>
+
+<script>
+document.addEventListener("click",function(e){
+ const tab=e.target.closest(".settings-tab"); if(!tab)return;
+ document.querySelectorAll(".settings-tab").forEach(x=>x.classList.remove("active"));
+ tab.classList.add("active");
+ const mode=tab.dataset.settingsTab;
+ ["items","rewards","data"].forEach(k=>{
+   const el=document.getElementById("settings"+k.charAt(0).toUpperCase()+k.slice(1)+"Panel");
+   if(el)el.classList.toggle("hidden",k!==mode);
+ });
+});
+</script>
+<script>
+(function(){
+function backup(){
+ return {version:1,exportedAt:new Date().toISOString(),data:data,actions:actions,selectedDate:selectedDate,lpsItems:lpsItems,rewards:rewards};
+}
+const ex=document.getElementById("exportLps");
+if(ex)ex.onclick=function(){
+ const blob=new Blob([JSON.stringify(backup(),null,2)],{type:"application/json"});
+ const u=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=u;a.download="Belera_LPS_backup_"+new Date().toISOString().slice(0,10)+".json";
+ document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);
+};
+const ch=document.getElementById("chooseImport"),fi=document.getElementById("importLps");
+if(ch&&fi)ch.onclick=()=>fi.click();
+if(fi)fi.onchange=function(){
+ const f=this.files&&this.files[0];if(!f)return;
+ const r=new FileReader();r.onload=function(){
+  try{
+   const b=JSON.parse(r.result);
+   if(!b.data||!b.actions||!Array.isArray(b.lpsItems)||!Array.isArray(b.rewards))throw 0;
+   if(!confirm("Импорт заменит текущие данные LPS. Продолжить?"))return;
+   data=b.data;actions=b.actions;selectedDate=b.selectedDate||selectedDate;lpsItems=b.lpsItems;rewards=b.rewards;
+   localStorage.setItem("data",JSON.stringify(data));localStorage.setItem("actions",JSON.stringify(actions));
+   localStorage.setItem(itemsKey,JSON.stringify(lpsItems));localStorage.setItem(rewardsKey,JSON.stringify(rewards));
+   renderAll();alert("LPS успешно восстановлена.");
+  }catch(e){alert("Не удалось импортировать файл LPS.");}
+  fi.value="";
+ };r.readAsText(f);
+};
+const reset=document.getElementById("resetLps");
+if(reset)reset.onclick=function(){
+ if(!confirm("Точно удалить ВСЕ данные LPS с этого устройства?"))return;
+ localStorage.clear();location.reload();
+};
+})();
+</script><script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script></body>
+</html>
