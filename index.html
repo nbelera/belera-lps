@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Belera LPS v1.10 — Belera LPS</title>
+<title>Belera LPS v1.12 — Belera LPS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial,sans-serif}
 .app{max-width:760px;margin:auto;padding:18px 14px 90px}
-h1{margin:0;font-size:30px}.sub{color:#777;margin-top:2px}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0}
+h1{margin:0;font-size:30px}.sub{color:#777;margin-top:2px}.date-select{display:flex;align-items:center;gap:8px;margin-top:10px}.date-select input{font:inherit;font-size:15px;padding:8px 10px;border:1px solid #aaa;border-radius:10px;background:#fff}.date-today{padding:8px 10px;border:1px solid #111;border-radius:10px;background:#fff}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0}
 button{font:inherit;cursor:pointer}.tab{border:1px solid #111;border-radius:12px;padding:10px 6px;background:#fff}.tab.active{background:#111;color:#fff}
 .card{background:#f7f7f8;border-radius:18px;padding:16px;margin:12px 0}.muted{color:#777;font-size:13px}
 .balance{font-size:42px;font-weight:750;margin-top:3px}.search{width:100%;font-size:17px;padding:12px;border:1px solid #aaa;border-radius:12px;margin:12px 0}
@@ -57,7 +57,7 @@ hr{border:0;border-top:1px solid #ddd;margin:12px 0}
 </nav>
 
 <section id="today">
-<div class="card"><div id="todayDate" class="muted"></div><div id="todayBalance" class="balance">0</div><div class="muted">Результат дня</div></div>
+<div class="card"><div id="todayDate" class="muted"></div><div class="date-select"><label for="selectedDateInput" class="muted">Ввод за:</label><input id="selectedDateInput" type="date"><button id="todayBtn" class="date-today" type="button">Сегодня</button></div><div id="todayBalance" class="balance">0</div><div class="muted">Результат дня</div></div>
 <div class="card"><b>Добавить действие</b><input id="search" class="search" placeholder="Поиск показателя…"><div id="items"></div></div>
 </section>
 
@@ -164,7 +164,15 @@ let data=load(keyData,{}), actions=load(keyActions,{}), selectedDate=todayKey(),
 
 function load(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch(e){return f}}
 function save(){localStorage.setItem(keyData,JSON.stringify(data));localStorage.setItem(keyActions,JSON.stringify(actions))}
-function todayKey(){return new Date().toISOString().slice(0,10)}
+function todayKey(){
+ const d=new Date();
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+ return `${y}-${m}-${day}`;
+}
+function todayKeyFromDate(d){
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+ return `${y}-${m}-${day}`;
+}
 function fmt(n){return Number(n||0).toLocaleString("ru-RU",{maximumFractionDigits:2})}
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 
@@ -180,13 +188,15 @@ function renderItems(){
  document.getElementById("items").innerHTML=lpsItems.map((x,i)=>({x,i}))
  .filter(o=>o.x.name.toLowerCase().includes(q)).map(o=>{
    const t=totals[o.x.name];
-   const hist=t?`<div class="history-inline">Сегодня: <b>${fmt(t.qty)}</b> ед. · <b>${t.points>=0?"+":""}${fmt(t.points)} очков</b></div>`:"";
+   const hist=t?`<div class="history-inline">За день: <b>${fmt(t.qty)}</b> ед. · <b>${t.points>=0?"+":""}${fmt(t.points)} очков</b></div>`:"";
    return `<div class="item"><div><div>${esc(o.x.name)}</div><div class="points">+ ${o.x.plus??"—"} / − ${o.x.minus??"—"}</div>${hist}</div><button class="add" data-i="${o.i}" type="button">Добавить</button></div>`;
  }).join("");
 }
 function renderToday(){
  const d=new Date(selectedDate+"T12:00:00");
  document.getElementById("todayDate").textContent=d.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ const dateInput=document.getElementById("selectedDateInput");
+ if(dateInput){dateInput.value=selectedDate;dateInput.max=todayKey();}
  const b=data[selectedDate]||0;document.getElementById("todayBalance").textContent=(b>=0?"+":"")+fmt(b);
 }
 function renderHistory(){
@@ -302,11 +312,11 @@ function rewardCurrent(period){
    return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
  }
  if(period==="Месяц"){
-   const ym=now.toISOString().slice(0,7),a=all.filter(k=>k.startsWith(ym)).map(k=>Number(data[k]||0));
+   const ym=todayKey().slice(0,7),a=all.filter(k=>k.startsWith(ym)).map(k=>Number(data[k]||0));
    return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
  }
  const d=new Date(now); d.setHours(12,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7));
- const monday=d.toISOString().slice(0,10),a=all.filter(k=>k>=monday).map(k=>Number(data[k]||0));
+ const monday=todayKeyFromDate(d),a=all.filter(k=>k>=monday).map(k=>Number(data[k]||0));
  return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 }
 function renderSettings(){
@@ -359,6 +369,17 @@ document.addEventListener("click",e=>{
    historyDate=historyDate;
    renderHistory();
  }
+});
+document.getElementById("selectedDateInput").addEventListener("change",e=>{
+ const v=e.target.value;
+ if(!v)return;
+ const today=todayKey();
+ if(v>today){e.target.value=selectedDate;return;}
+ selectedDate=v;
+ renderToday();renderItems();
+});
+document.getElementById("todayBtn").addEventListener("click",()=>{
+ selectedDate=todayKey();renderToday();renderItems();
 });
 document.getElementById("search").addEventListener("input",renderItems);
 document.getElementById("period").addEventListener("change",renderStats);
@@ -422,7 +443,7 @@ const ex=document.getElementById("exportLps");
 if(ex)ex.onclick=function(){
  const blob=new Blob([JSON.stringify(backup(),null,2)],{type:"application/json"});
  const u=URL.createObjectURL(blob),a=document.createElement("a");
- a.href=u;a.download="Belera_LPS_backup_"+new Date().toISOString().slice(0,10)+".json";
+ a.href=u;a.download="Belera_LPS_backup_"+todayKey()+".json";
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);
 };
 const ch=document.getElementById("chooseImport"),fi=document.getElementById("importLps");
