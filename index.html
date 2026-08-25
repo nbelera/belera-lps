@@ -284,6 +284,12 @@ let rewards=JSON.parse(localStorage.getItem(rewardsKey)||'null')||[
  {period:"Неделя",target:500,name:"Снять эко-дом на выходные"},
  {period:"Год",target:100,name:"Поездка зимой в отпуск в Германию"}
 ];
+// Миграция старых данных: если дневной награды ещё нет,
+// добавляем её, не трогая уже настроенные пользователем награды.
+if(!rewards.some(r=>r.period==="День")){
+ rewards.unshift({period:"День",target:0,name:"Награда за день"});
+ localStorage.setItem(rewardsKey,JSON.stringify(rewards));
+}
 function saveRewards(){localStorage.setItem(rewardsKey,JSON.stringify(rewards))}
 function rewardCurrent(period){
  const now=new Date(), all=Object.keys(data).sort(), year=String(now.getFullYear());
