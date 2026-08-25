@@ -1,12 +1,6 @@
 <!doctype html>
 <html lang="ru">
-<head><meta name="theme-color" content="#111111">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Belera LPS">
-
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
@@ -85,9 +79,7 @@ hr{border:0;border-top:1px solid #ddd;margin:12px 0}
 <div id="chartTable"></div>
 </div>
 <div class="card"><h3>Награды</h3>
-<div class="row"><div><b>Награда недели</b><div class="muted">Сходить на массаж</div></div><span id="reward1">0</span></div>
-<div class="row"><div><b>Награда недели</b><div class="muted">Снять эко-дом на выходные</div></div><span id="reward2">0</span></div>
-<div class="row"><div><b>Подарок по итогам 2026 года</b><div class="muted">Поездка зимой в отпуск в Германию</div></div><span id="reward3">0</span></div>
+<div id="statsRewards"></div>
 </div>
 </section>
 
@@ -240,6 +232,15 @@ function draw(vals){
  const latest=ys[ys.length-1]||0;
  document.getElementById("latest").textContent=(latest>=0?"+":"")+fmt(latest);
  table.innerHTML=`<table class="chart-table"><tr><th>Период</th><th>Баллы</th></tr>${vals.slice().reverse().map(v=>`<tr><td>${esc(v.k)}</td><td class="${v.v>=0?"pos":"neg"}">${v.v>=0?"+":""}${fmt(v.v)}</td></tr>`).join("")}</table>`;
+ renderStatsRewards();
+}
+function renderStatsRewards(){
+ const box=document.getElementById("statsRewards"); if(!box)return;
+ box.innerHTML=rewards.map(r=>{
+   const cur=rewardCurrent(r.period), ok=cur>=Number(r.target);
+   const label=r.period==="День"?"Награда за день":r.period==="Неделя"?"Награда недели":r.period==="Месяц"?"Награда месяца":"Подарок по итогам года";
+   return `<div class="row"><div><b>${esc(label)}</b><div class="muted">${esc(r.name)}</div></div><span class="${ok?"pos":""}">${cur>=0?"+":""}${fmt(cur)}</span></div>`;
+ }).join("");
 }
 function renderStats(){
  const p=document.getElementById("period").value,g=groups(p);
@@ -252,9 +253,7 @@ function renderStats(){
    return {k:label,v:g[k]};
  });
  draw(vals);
- const ykeys=Object.keys(data).filter(k=>k.startsWith("2026"));
- const yv=ykeys.map(k=>data[k]||0),y=yv.length?yv.reduce((a,b)=>a+b,0)/yv.length:0;
- document.getElementById("reward3").textContent=(y>=0?"+":"")+fmt(y);
+ renderStatsRewards();
 }
 function renderRules(){document.getElementById("rules").innerHTML="<table><tr><th>Показатель</th><th>+</th><th>−</th></tr>"+lpsItems.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.plus??"—"}</td><td>${x.minus??"—"}</td></tr>`).join("")+"</table>"}
 
@@ -419,9 +418,5 @@ if(reset)reset.onclick=function(){
  localStorage.clear();location.reload();
 };
 })();
-</script><script>
-if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-}
 </script></body>
 </html>
