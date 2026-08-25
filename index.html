@@ -14,7 +14,7 @@ button{font:inherit;cursor:pointer}.tab{border:1px solid #111;border-radius:12px
 .balance{font-size:42px;font-weight:750;margin-top:3px}.search{width:100%;font-size:17px;padding:12px;border:1px solid #aaa;border-radius:12px;margin:12px 0}
 .item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 10px;border-radius:10px;border-bottom:1px solid #ddd}.item:nth-child(even){background:#e2e2e7}
 .add{flex:0 0 auto;padding:8px 13px;border-radius:10px;background:#fff;color:#111;border:1px solid #000}.item:nth-child(even) .add{background:#e9e9ee;border-color:#000}
-.points{color:#777;font-size:12px;margin-top:3px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #ddd}.row:last-child{border-bottom:0}
+.points{color:#777;font-size:12px;margin-top:3px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #ddd}.row:last-child{border-bottom:0}.history-delete{padding:6px 9px;border:1px solid #111;border-radius:9px;background:#fff;font-size:13px;flex:0 0 auto}
 .tag{font-weight:650;white-space:nowrap}.pos{color:#087f3e}.neg{color:#b42318}
 .hidden{display:none!important}svg{width:100%;height:280px;display:block}.small{font-size:12px}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);display:none;align-items:flex-end;z-index:20}.modal-bg.show{display:flex}
@@ -194,8 +194,11 @@ function renderHistory(){
  document.getElementById("historyDays").innerHTML=days.length?days.map(k=>{
   const b=data[k]||0;return `<div class="row" data-day="${k}" style="cursor:pointer"><span>${new Date(k+"T12:00:00").toLocaleDateString("ru-RU")}</span><b class="${b>=0?"pos":"neg"}">${b>=0?"+":""}${fmt(b)}</b></div>`;
  }).join(""):"<div class='muted'>История пока пуста.</div>";
- const a=(actions[historyDate]||[]).slice().reverse();
- document.getElementById("dayActions").innerHTML=a.length?a.map(x=>`<div class="row"><div><b>${esc(x.name)}</b><div class="muted">${esc(x.qty)} × ${esc(x.unit)}</div></div><span class="${x.points>=0?"pos":"neg"}">${x.points>=0?"+":""}${fmt(x.points)}</span></div>`).join(""):"<div class='muted'>За этот день действий пока нет.</div>";
+ const a=(actions[historyDate]||[]).map((x,i)=>({x,i})).reverse();
+ document.getElementById("dayActions").innerHTML=a.length?a.map(o=>{
+   const x=o.x;
+   return `<div class="row"><div><b>${esc(x.name)}</b><div class="muted">${esc(x.qty)} × ${esc(x.unit)}</div></div><div style="display:flex;align-items:center;gap:10px"><span class="${x.points>=0?"pos":"neg"}">${x.points>=0?"+":""}${fmt(x.points)}</span><button class="history-delete" data-delete-action="${o.i}" type="button" title="Удалить">Удалить</button></div></div>`;
+ }).join(""):"<div class='muted'>За этот день действий пока нет.</div>";
 }
 function groups(period){
  const out={};Object.keys(data).sort().forEach(k=>{
@@ -335,7 +338,28 @@ function openModal(i){
  pending=i;const x=lpsItems[i];document.getElementById("modalTitle").textContent="Добавить: "+x.name;document.getElementById("modalRule").textContent="+"+(x.plus??"—")+" / −"+(x.minus??"—");document.getElementById("qty").value="1";
  const dir=document.getElementById("direction");dir.style.display=(x.plus!==null&&x.minus!==null)?"flex":"none";document.getElementById("plusBtn").classList.add("sel");document.getElementById("minusBtn").classList.remove("sel");document.getElementById("modalBg").classList.add("show");setTimeout(()=>document.getElementById("qty").focus(),50);
 }
-document.addEventListener("click",e=>{const b=e.target.closest(".add");if(b)openModal(Number(b.dataset.i));const d=e.target.closest("[data-day]");if(d){historyDate=d.dataset.day;renderHistory()}});
+document.addEventListener("click",e=>{
+ const b=e.target.closest(".add");
+ if(b)openModal(Number(b.dataset.i));
+ const d=e.target.closest("[data-day]");
+ if(d){historyDate=d.dataset.day;renderHistory();}
+ const del=e.target.closest("[data-delete-action]");
+ if(del){
+   const idx=Number(del.dataset.deleteAction);
+   const list=actions[historyDate]||[];
+   if(!list[idx])return;
+   const item=list[idx];
+   if(!confirm(`Удалить запись «${item.name}» на ${fmt(item.points)} баллов?`))return;
+   data[historyDate]=(data[historyDate]||0)-Number(item.points||0);
+   list.splice(idx,1);
+   if(list.length) actions[historyDate]=list; else delete actions[historyDate];
+   if(Number(data[historyDate]||0)===0) delete data[historyDate];
+   save();
+   renderAll();
+   historyDate=historyDate;
+   renderHistory();
+ }
+});
 document.getElementById("search").addEventListener("input",renderItems);
 document.getElementById("period").addEventListener("change",renderStats);
 document.getElementById("plusBtn").addEventListener("click",()=>{plusBtn.classList.add("sel");minusBtn.classList.remove("sel")});
