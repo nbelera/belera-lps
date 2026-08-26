@@ -391,10 +391,19 @@ document.getElementById("saveBtn").addEventListener("click",()=>{
  if(pending===null)return;const x=lpsItems[pending],q=Number(String(document.getElementById("qty").value).replace(",","."));if(!Number.isFinite(q)||q<=0)return;
  let sign=x.plus===null?-1:x.minus===null?1:(minusBtn.classList.contains("sel")?-1:1),unit=sign>0?x.plus:x.minus,pts=Number(unit)*q;
  data[selectedDate]=(data[selectedDate]||0)+pts;if(!actions[selectedDate])actions[selectedDate]=[];actions[selectedDate].push({name:x.name,qty:q,unit:unit,points:pts,time:new Date().toISOString()});save();historyDate=selectedDate;modalBg.classList.remove("show");pending=null;
+ renderAll();
+});
+
 document.getElementById("newItem").addEventListener("click",()=>{
  lpsItems.push({name:"Новый показатель",plus:100,minus:-100});
  saveLpsItems();renderSettingsItems();renderRules();renderItems();
 });
+
+document.getElementById("newReward").addEventListener("click",()=>{
+ rewards.push({period:"Неделя",target:0,name:"Новая награда"});
+ saveRewards();renderSettings();
+});
+
 document.addEventListener("click",e=>{
  const b=e.target.closest("[data-save-item]");
  if(b){
@@ -404,20 +413,38 @@ document.addEventListener("click",e=>{
   lpsItems[i].plus=num(box.querySelector('[data-f="plus"]').value);
   lpsItems[i].minus=num(box.querySelector('[data-f="minus"]').value);
   saveLpsItems();renderSettingsItems();renderRules();renderItems();
+  return;
  }
  const d=e.target.closest("[data-del-item]");
- if(d){lpsItems.splice(Number(d.dataset.delItem),1);saveLpsItems();renderSettingsItems();renderRules();renderItems();}
+ if(d){lpsItems.splice(Number(d.dataset.delItem),1);saveLpsItems();renderSettingsItems();renderRules();renderItems();return;}
+ const rSave=e.target.closest("[data-save-r]");
+ if(rSave){
+  const i=Number(rSave.dataset.saveR),box=rSave.closest(".settings-reward");
+  const num=v=>{const t=String(v).trim().replace(",",".");const n=Number(t);return t===""||!Number.isFinite(n)?0:n};
+  rewards[i].name=box.querySelector('[data-f="name"]').value.trim()||"Новая награда";
+  rewards[i].period=box.querySelector('[data-f="period"]').value;
+  rewards[i].target=num(box.querySelector('[data-f="target"]').value);
+  saveRewards();renderSettings();
+  return;
+ }
+ const rDel=e.target.closest("[data-del-r]");
+ if(rDel){
+  rewards.splice(Number(rDel.dataset.delR),1);
+  saveRewards();renderSettings();
+ }
 });
 
 document.querySelectorAll(".settings-tab").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll(".settings-tab").forEach(x=>x.classList.remove("active"));
  b.classList.add("active");
- const itemsOn=b.dataset.settingsTab==="items";
- document.getElementById("settingsItemsPanel").classList.toggle("hidden",!itemsOn);
- document.getElementById("settingsRewardsPanel").classList.toggle("hidden",itemsOn);
+ const mode=b.dataset.settingsTab;
+ ["items","rewards","data"].forEach(k=>{
+   const el=document.getElementById("settings"+k.charAt(0).toUpperCase()+k.slice(1)+"Panel");
+   if(el)el.classList.toggle("hidden",k!==mode);
+ });
 }));
+
 renderAll();
-});
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");["today","history","stats","settings"].forEach(id=>document.getElementById(id).classList.toggle("hidden",id!==b.dataset.screen));}));
 renderAll();
 </script>
