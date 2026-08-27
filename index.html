@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Belera LPS v1.12 — Belera LPS</title>
+<title>Belera LPS v1.14 — Belera LPS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial,sans-serif}
 .app{max-width:760px;margin:auto;padding:18px 14px 90px}
@@ -213,10 +213,14 @@ function renderHistory(){
 function groups(period){
  const out={};Object.keys(data).sort().forEach(k=>{
   let key=k;
-  if(period==="Недели"){let d=new Date(k+"T12:00:00"),n=(d.getDay()+6)%7;d.setDate(d.getDate()-n);key=d.toISOString().slice(0,10)}
+  if(period==="Недели"){let d=new Date(k+"T12:00:00"),n=(d.getDay()+6)%7;d.setDate(d.getDate()-n);key=todayKeyFromDate(d)}
   if(period==="Месяцы")key=k.slice(0,7);if(period==="Год")key=k.slice(0,4);
-  out[key]=(out[key]||0)+(data[k]||0);
- });return out;
+  if(!out[key])out[key]={sum:0,count:0};
+  out[key].sum+=Number(data[k]||0);
+  out[key].count+=1;
+ });
+ Object.keys(out).forEach(k=>{out[k]=period==="Дни"?out[k].sum:out[k].sum/out[k].count});
+ return out;
 }
 function draw(vals){
  const svg=document.getElementById("chart"), table=document.getElementById("chartTable");
@@ -230,21 +234,28 @@ function draw(vals){
  const points=vals.map((v,i)=>`${X(i)},${Y(v.v)}`).join(" ");
  const labels=vals.map((v,i)=>{
    if(vals.length>14 && i%Math.ceil(vals.length/10)!==0 && i!==vals.length-1)return "";
-   return `<text x="${X(i)}" y="${H-13}" text-anchor="middle" font-size="11" fill="#555">${esc(v.k)}</text>`;
+   return `<text x="${X(i)}" y="${H-13}" text-anchor="middle" font-size="13" fill="#555">${esc(v.k)}</text>`;
+ }).join("");
+ const valueLabels=vals.map((v,i)=>{
+   const y=Y(v.v), offset=v.v>=0?-11:17;
+   return `<text x="${X(i)}" y="${Math.max(15,Math.min(H-30,y+offset))}" text-anchor="middle" font-size="15" font-weight="700" fill="#111">${v.v>=0?"+":""}${fmt(v.v)}</text>`;
  }).join("");
  svg.innerHTML=`
  <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="#aaa"/>
  <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="#aaa"/>
  <line x1="${pL}" y1="${y0}" x2="${W-pR}" y2="${y0}" stroke="#999"/>
  <line x1="${pL}" y1="${ya}" x2="${W-pR}" y2="${ya}" stroke="#555" stroke-dasharray="8 7"/>
- <text x="5" y="${Math.max(15,Math.min(H-50,ya-5))}" font-size="12" fill="#555">ср. ${fmt(avg)}</text>
+ <text x="5" y="${Math.max(15,Math.min(H-50,ya-5))}" font-size="14" fill="#555">ср. ${avg>=0?"+":""}${fmt(avg)}</text>
  <polyline points="${points}" fill="none" stroke="#111" stroke-width="3"/>
- ${vals.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v.v)}" r="4" fill="#111"><title>Belera LPS v1.10 — ${v.k}: ${fmt(v.v)}</title></circle>`).join("")}
+ ${vals.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v.v)}" r="5" fill="#111"><title>Belera LPS v1.14 — ${v.k}: ${fmt(v.v)}</title></circle>`).join("")}
+ ${valueLabels}
  ${labels}`;
  document.getElementById("average").textContent=(avg>=0?"+":"")+fmt(avg);
  const latest=ys[ys.length-1]||0;
  document.getElementById("latest").textContent=(latest>=0?"+":"")+fmt(latest);
- table.innerHTML=`<table class="chart-table"><tr><th>Период</th><th>Баллы</th></tr>${vals.slice().reverse().map(v=>`<tr><td>${esc(v.k)}</td><td class="${v.v>=0?"pos":"neg"}">${v.v>=0?"+":""}${fmt(v.v)}</td></tr>`).join("")}</table>`;
+ const periodName=document.getElementById("period").value;
+ const valueTitle=periodName==="Дни"?"Баллы":"Среднее за день";
+ table.innerHTML=`<table class="chart-table"><tr><th>Период</th><th>${valueTitle}</th></tr>${vals.slice().reverse().map(v=>`<tr><td>${esc(v.k)}</td><td class="${v.v>=0?"pos":"neg"}">${v.v>=0?"+":""}${fmt(v.v)}</td></tr>`).join("")}</table>`;
  renderStatsRewards();
 }
 function renderStatsRewards(){
