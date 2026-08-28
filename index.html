@@ -3,50 +3,50 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2e7d32">
+<meta name="theme-color" content="#34a853">
 <title>Belera LPS v1.16 — Belera LPS</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7faf7;color:#162016;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#f5faf6;color:#17251b;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial,sans-serif}
 .app{max-width:760px;margin:auto;padding:18px 14px 90px}
-h1{margin:0;font-size:30px}.sub{color:#647064;margin-top:2px}.date-select{display:flex;align-items:center;gap:8px;margin-top:10px}.date-select input{font:inherit;font-size:15px;padding:8px 10px;border:1px solid #a9b8aa;border-radius:10px;background:#fff}.date-today{padding:8px 10px;border:1px solid #2e7d32;border-radius:10px;background:#fff;color:#246b2a}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0}
-button{font:inherit;cursor:pointer}.tab{border:1px solid #9aaa9b;border-radius:12px;padding:10px 6px;background:#fff;color:#2a332a}.tab.active{background:#2e7d32;border-color:#2e7d32;color:#fff}
-.card{background:#f1f6f1;border-radius:18px;padding:16px;margin:12px 0}.muted{color:#647064;font-size:13px}
-.balance{font-size:42px;font-weight:750;margin-top:3px}.search{width:100%;font-size:17px;padding:12px;border:1px solid #aaa;border-radius:12px;margin:12px 0}
-.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 10px;border-radius:10px;border-bottom:1px solid #ddd}.item:nth-child(even){background:#e7f0e7}
-.add{flex:0 0 auto;padding:8px 13px;border-radius:10px;background:#fff;color:#246b2a;border:1px solid #2e7d32}.item:nth-child(even) .add{background:#edf5ed;border-color:#2e7d32}
-.points{color:#777;font-size:12px;margin-top:3px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #ddd}.row:last-child{border-bottom:0}.history-delete{padding:6px 9px;border:1px solid #8ca18e;border-radius:9px;background:#fff;font-size:13px;flex:0 0 auto}
-.tag{font-weight:650;white-space:nowrap}.pos{color:#1f7a32}.neg{color:#b42318}
+h1{margin:0;font-size:30px}.sub{color:#66806c;margin-top:2px}.date-select{display:flex;align-items:center;gap:8px;margin-top:10px}.date-select input{font:inherit;font-size:15px;padding:8px 10px;border:1px solid #a9b9ad;border-radius:10px;background:#fff}.date-today{padding:8px 10px;border:1px solid #2f7d45;border-radius:10px;background:#fff;color:#236b38}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0}
+button{font:inherit;cursor:pointer}.tab{border:1px solid #9fb2a3;border-radius:12px;padding:10px 6px;background:#fff;color:#23402a}.tab.active{background:#2f7d45;color:#fff;border-color:#2f7d45}
+.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0}.muted{color:#66806c;font-size:13px}
+.balance{font-size:42px;font-weight:750;margin-top:3px}.search{width:100%;font-size:17px;padding:12px;border:1px solid #a9b9ad;border-radius:12px;margin:12px 0}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 10px;border-radius:10px;border-bottom:1px solid #ddd}.item:nth-child(even){background:#eef6f0}
+.add{flex:0 0 auto;padding:8px 13px;border-radius:10px;background:#fff;color:#236b38;border:1px solid #3d8a53}.item:nth-child(even) .add{background:#f5faf6;border-color:#3d8a53}
+.points{color:#66806c;font-size:12px;margin-top:3px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #ddd}.row:last-child{border-bottom:0}.history-delete{padding:6px 9px;border:1px solid #111;border-radius:9px;background:#fff;font-size:13px;flex:0 0 auto}
+.tag{font-weight:650;white-space:nowrap}.pos{color:#16723a}.neg{color:#b42318}
 .hidden{display:none!important}svg{width:100%;height:280px;display:block}.small{font-size:12px}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);display:none;align-items:flex-end;z-index:20}.modal-bg.show{display:flex}
 .modal{width:100%;max-width:600px;margin:auto;background:#fff;border-radius:22px 22px 0 0;padding:20px;box-shadow:0 -8px 30px rgba(0,0,0,.2)}
 .modal input{width:100%;font-size:22px;padding:13px;border:1px solid #999;border-radius:12px;margin:8px 0 14px}
-.modal-actions{display:flex;gap:10px}.modal-actions button{flex:1;padding:12px;border-radius:12px;border:1px solid #111}.cancel{background:#fff}.save{background:#2e7d32;color:#fff}
-.dir{display:flex;gap:8px;margin:4px 0 14px}.dir button{flex:1;padding:10px;border-radius:11px;background:#eef3ee;border:1px solid #8ca18e}.dir .sel{background:#2e7d32;color:#fff;border-color:#2e7d32}
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid #ddd}tr:nth-child(even) td{background:#e7f0e7}
+.modal-actions{display:flex;gap:10px}.modal-actions button{flex:1;padding:12px;border-radius:12px;border:1px solid #111}.cancel{background:#fff}.save{background:#2f7d45;color:#fff;border-color:#2f7d45}
+.dir{display:flex;gap:8px;margin:4px 0 14px}.dir button{flex:1;padding:10px;border-radius:11px;background:#eee;border:1px solid #111}.dir .sel{background:#2f7d45;color:#fff;border-color:#2f7d45}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid #ddd}tr:nth-child(even) td{background:#eef6f0}
 hr{border:0;border-top:1px solid #ddd;margin:12px 0}
 .history-inline{margin-top:5px;font-size:12px;color:#666;line-height:1.45}.history-inline b{color:#111}
 
 .chart-wrap{overflow-x:auto}
 .chart-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
-.stat-box{background:#fff;border:1px solid #c8d4c9;border-radius:12px;padding:10px}
-.stat-box .num{font-size:28px;font-weight:700;margin-top:3px}
+.stat-box{background:#fff;border:1px solid #c9d8cc;border-radius:12px;padding:10px}
+.stat-box .num{font-size:24px;font-weight:700;margin-top:3px}
 .chart-table{width:100%;margin-top:12px;font-size:13px}
 .chart-table th,.chart-table td{padding:8px 6px;border-bottom:1px solid #ddd;text-align:left}
-.chart-table tr:nth-child(even) td{background:#e7f0e7}
+.chart-table tr:nth-child(even) td{background:#eef6f0}
 
-.settings-reward{border:1px solid #b9c8ba;border-radius:14px;padding:12px;margin:10px 0}
+.settings-reward{border:1px solid #c9d8cc;border-radius:14px;padding:12px;margin:10px 0}
 .settings-reward input,.settings-reward select{width:100%;padding:10px;border:1px solid #aaa;border-radius:10px;font:inherit;margin:5px 0 9px}
-.settings-actions{display:flex;gap:8px}.settings-actions button{padding:8px 12px;border:1px solid #2e7d32;border-radius:10px;background:#fff;color:#246b2a}
+.settings-actions{display:flex;gap:8px}.settings-actions button{padding:8px 12px;border:1px solid #111;border-radius:10px;background:#fff}
 
-.settings-item{border:1px solid #b9c8ba;border-radius:14px;padding:12px;margin:10px 0}
+.settings-item{border:1px solid #c9d8cc;border-radius:14px;padding:12px;margin:10px 0}
 .settings-item input{width:100%;padding:10px;border:1px solid #aaa;border-radius:10px;font:inherit;margin:5px 0 9px}
 .item-coefs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .item-coefs input{margin-top:5px}.settings-actions{display:flex;gap:8px;margin-top:5px}
-.settings-actions button{padding:8px 12px;border:1px solid #2e7d32;border-radius:10px;background:#fff;color:#246b2a}
+.settings-actions button{padding:8px 12px;border:1px solid #111;border-radius:10px;background:#fff}
 
 .settings-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:14px}
-.settings-tab{padding:11px 8px;border:1px solid #9aaa9b;border-radius:11px;background:#fff;color:#2a332a;font:inherit}
-.settings-tab.active{background:#2e7d32;border-color:#2e7d32;color:#fff}
+.settings-tab{padding:11px 8px;border:1px solid #111;border-radius:11px;background:#fff;font:inherit}
+.settings-tab.active{background:#111;color:#fff}
 </style>
 </head>
 <body>
@@ -266,20 +266,20 @@ function draw(vals){
  const points=vals.map((v,i)=>`${X(i)},${Y(v.v)}`).join(" ");
  const labels=vals.map((v,i)=>{
    if(vals.length>14 && i%Math.ceil(vals.length/10)!==0 && i!==vals.length-1)return "";
-   return `<text x="${X(i)}" y="${H-13}" text-anchor="middle" font-size="13" fill="#555">${esc(v.k)}</text>`;
+   return `<text x="${X(i)}" y="${H-13}" text-anchor="middle" font-size="15" fill="#52705a">${esc(v.k)}</text>`;
  }).join("");
  const valueLabels=vals.map((v,i)=>{
    const y=Y(v.v), offset=v.v>=0?-11:17;
-   return `<text x="${X(i)}" y="${Math.max(15,Math.min(H-30,y+offset))}" text-anchor="middle" font-size="17" font-weight="700" fill="#246b2a">${v.v>=0?"+":""}${fmt(v.v)}</text>`;
+   return `<text x="${X(i)}" y="${Math.max(15,Math.min(H-30,y+offset))}" text-anchor="middle" font-size="19" font-weight="750" fill="#1f5f32">${v.v>=0?"+":""}${fmt(v.v)}</text>`;
  }).join("");
  svg.innerHTML=`
- <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="#aaa"/>
- <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="#aaa"/>
- <line x1="${pL}" y1="${y0}" x2="${W-pR}" y2="${y0}" stroke="#999"/>
- <line x1="${pL}" y1="${ya}" x2="${W-pR}" y2="${ya}" stroke="#6b8f6f" stroke-dasharray="8 7"/>
- <text x="5" y="${Math.max(15,Math.min(H-50,ya-5))}" font-size="22" font-weight="700" fill="#2e7d32">ср. ${avg>=0?"+":""}${fmt(avg)}</text>
- <polyline points="${points}" fill="none" stroke="#2e7d32" stroke-width="3"/>
- ${vals.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v.v)}" r="6" fill="#2e7d32"><title>Belera LPS v1.16 — ${v.k}: ${fmt(v.v)}</title></circle>`).join("")}
+ <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="#a8b9ad"/>
+ <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="#a8b9ad"/>
+ <line x1="${pL}" y1="${y0}" x2="${W-pR}" y2="${y0}" stroke="#7f9a86"/>
+ <line x1="${pL}" y1="${ya}" x2="${W-pR}" y2="${ya}" stroke="#5a8d68" stroke-dasharray="8 7"/>
+ <text x="5" y="${Math.max(15,Math.min(H-50,ya-5))}" font-size="24" font-weight="750" fill="#2f7d45">ср. ${avg>=0?"+":""}${fmt(avg)}</text>
+ <polyline points="${points}" fill="none" stroke="#2f7d45" stroke-width="3.5"/>
+ ${vals.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v.v)}" r="5" fill="#2f7d45"><title>Belera LPS v1.16 — ${v.k}: ${fmt(v.v)}</title></circle>`).join("")}
  ${valueLabels}
  ${labels}`;
  document.getElementById("average").textContent=(avg>=0?"+":"")+fmt(avg);
